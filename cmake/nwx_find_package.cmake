@@ -97,7 +97,7 @@ function(nwx_find_package _nfp_package_name)
     # Validate that TARGETS is in the correct pair-wise form, simultaneously
     list(LENGTH _nfp_TARGETS _nfp_TARGETS_len)
     math(EXPR _nfp_TARGETS_is_odd "${_nfp_TARGETS_len} % 2")
-    if(_nfp_TARGETS_is_odd EQUAL 0)
+    if(_nfp_TARGETS_is_odd EQUAL 1)
         cpp_raise(InvalidArgument "TARGETS list length is odd, but must be even pairs.")
     endif()
 
