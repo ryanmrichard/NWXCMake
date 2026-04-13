@@ -1,0 +1,35 @@
+# Copyright 2025 NWChemEx-Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+include_guard()
+
+function(catch2_tests_from_dir ctfd_target_name ctfd_dir)
+if(${BUILD_TESTING})
+    include(CTest)
+    include(get_dependencies)
+    get_dependencies(catch2)
+
+    file(GLOB_RECURSE ctfd_test_files CONFIGURE_DEPENDS ${ctfd_dir}/*.cpp)
+
+    add_executable(${ctfd_target_name} ${ctfd_test_files})
+
+    target_link_libraries(
+        ${ctfd_target_name} PRIVATE Catch2::Catch2WithMain ${ARGN})
+
+        add_test(NAME ${ctfd_target_name}
+             COMMAND ${ctfd_target_name}
+             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+endif()
+endfunction()
