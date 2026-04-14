@@ -27,14 +27,14 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
     )
     list(FILTER __nwx_python_module_source_files INCLUDE REGEX ".*/export_.*\\.cpp$")
     pybind11_add_module(
-        ${nwx_python_module_name} ${__nwx_python_module_source_files}
+        ${nwx_python_module_name}_python ${__nwx_python_module_source_files}
     )
-    target_link_libraries(${nwx_python_module_name} PRIVATE ${PROJECT_NAME})
-    target_include_directories(${nwx_python_module_name} PRIVATE
+    target_link_libraries(${nwx_python_module_name}_python PRIVATE ${PROJECT_NAME})
+    target_include_directories(${nwx_python_module_name}_python PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp/include
     )
     set_target_properties(
-        ${nwx_python_module_name}
+        ${nwx_python_module_name}_python
         PROPERTIES OUTPUT_NAME ${nwx_python_module_name}
     )
     install(TARGETS ${nwx_python_module_name}

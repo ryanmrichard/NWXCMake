@@ -15,8 +15,6 @@
 include_guard()
 include(FetchContent)
 
-
-
 function(get_dependencies)
     set(_gd_targets)
     if(SKBUILD)
