@@ -37,7 +37,7 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
         ${nwx_python_module_name}_python
         PROPERTIES OUTPUT_NAME ${nwx_python_module_name}
     )
-    install(TARGETS ${nwx_python_module_name}
+    install(TARGETS ${nwx_python_module_name}_python
     DESTINATION $<IF:$<BOOL:${SKBUILD_PLATLIB_DIR}>,${SKBUILD_PLATLIB_DIR},lib>
     )
 endfunction()
