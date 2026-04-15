@@ -13,10 +13,10 @@
 # limitations under the License.
 
 include_guard()
+include(CTest)
 
 function(catch2_tests_from_dir ctfd_target_name ctfd_dir)
 if(${BUILD_TESTING})
-    include(CTest)
     include(get_dependencies)
     get_dependencies(catch2)
 
