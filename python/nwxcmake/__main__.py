@@ -1,4 +1,4 @@
-# Copyright 2025 NWChemEx-Project
+# Copyright 2026 NWChemEx-Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include_guard()
-include(FetchContent)
+import sys
 
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11
-    GIT_TAG        "v3.0.2"
-)
+from . import cmake_dir
+
+sys.stdout.write(cmake_dir())

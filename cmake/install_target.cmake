@@ -58,11 +58,16 @@ function(install_library il_name il_header_dir)
     )
 
     # -- Install Headers --
+    # Trailing slash installs the *contents* of il_header_dir into include/,
+    # giving <prefix>/include/<pkg>/... (matches the INSTALL_INTERFACE:include
+    # usage requirement). Without it CMake appends the last path component,
+    # yielding <prefix>/include/include/<pkg>/...
     #TODO: Assert il_header_dir isn't empty
-    install(DIRECTORY "${il_header_dir}"
+    install(DIRECTORY "${il_header_dir}/"
         DESTINATION "${_il_includes_dir}"
         FILES_MATCHING
             PATTERN "*.hpp"
             PATTERN "*.h"
+            PATTERN "*.ipp"
     )
 endfunction()

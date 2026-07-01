@@ -1,4 +1,4 @@
-# Copyright 2025 NWChemEx-Project
+# Copyright 2026 NWChemEx-Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,21 @@
 # limitations under the License.
 
 include_guard()
-include(FetchContent)
 
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11
-    GIT_TAG        "v3.0.2"
-)
+#[[[
+# Locates the system MPI installation for C++.
+#
+# On success the imported target ``MPI::MPI_CXX`` and the usual
+# ``MPIEXEC_EXECUTABLE`` / ``MPIEXEC_NUMPROC_FLAG`` variables are made available
+# for linking libraries and launching parallel tests (see
+# :cmake:command:`nwx_mpi_test`).
+#
+# .. code-block:: cmake
+#
+#    include(nwx_find_mpi)
+#    nwx_find_mpi()
+#    nwx_library(my_lib "cxx/include" "cxx/src" MPI::MPI_CXX)
+#]]
+macro(nwx_find_mpi)
+    find_package(MPI REQUIRED COMPONENTS CXX)
+endmacro()
