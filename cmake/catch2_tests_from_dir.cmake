@@ -24,6 +24,8 @@ if(${BUILD_TESTING})
 
     add_executable(${ctfd_target_name} ${ctfd_test_files})
 
+    target_include_directories(${ctfd_target_name} PRIVATE "${ctfd_dir}")
+
     target_link_libraries(
         ${ctfd_target_name} PRIVATE Catch2::Catch2WithMain ${ARGN})
 

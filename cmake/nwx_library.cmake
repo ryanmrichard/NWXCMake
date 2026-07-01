@@ -15,19 +15,32 @@
 include_guard()
 
 function(nwx_library nl_project_name nl_inc_dir nl_src_dir)
-    file(GLOB_RECURSE __nl_header_files CONFIGURE_DEPENDS ${nl_inc_dir}/*.hpp)
     file(GLOB_RECURSE __nl_source_files CONFIGURE_DEPENDS ${nl_src_dir}/*.cpp)
     list(FILTER __nl_source_files EXCLUDE REGEX ".*/export_.*\\.cpp$")
-    add_library(${nl_project_name} ${__nl_source_files})
-    target_link_libraries(${nl_project_name} ${ARGN})
-    target_include_directories(${nl_project_name}
-        PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_inc_dir}>
-            $<INSTALL_INTERFACE:include>
-    )
-    set_target_properties(
-        ${nl_project_name} PROPERTIES POSITION_INDEPENDENT_CODE ON
-    )
+
+    if(__nl_source_files)
+        add_library(${nl_project_name} ${__nl_source_files})
+        target_link_libraries(${nl_project_name} PUBLIC ${ARGN})
+        target_include_directories(${nl_project_name}
+            PUBLIC
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_inc_dir}>
+                $<INSTALL_INTERFACE:include>
+            PRIVATE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_src_dir}/${nl_project_name}>
+        )
+        set_target_properties(
+            ${nl_project_name} PROPERTIES POSITION_INDEPENDENT_CODE ON
+        )
+    else()
+        # Header-only library — use INTERFACE target.
+        add_library(${nl_project_name} INTERFACE)
+        target_link_libraries(${nl_project_name} INTERFACE ${ARGN})
+        target_include_directories(${nl_project_name}
+            INTERFACE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_inc_dir}>
+                $<INSTALL_INTERFACE:include>
+        )
+    endif()
 
     include(install_target)
     install_library(

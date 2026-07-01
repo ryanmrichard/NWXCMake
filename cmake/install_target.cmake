@@ -35,13 +35,18 @@ function(install_library il_name il_header_dir)
     set(_il_includes_dir include)
 
     # -- Install target that is a library --
-    install(TARGETS ${il_name}
-        EXPORT ${il_name}Targets
-        ARCHIVE DESTINATION "${_il_archive_dir}"
-        LIBRARY DESTINATION "${_il_library_dir}"
-        RUNTIME DESTINATION "${_il_runtime_dir}"
-        INCLUDES DESTINATION "${_il_includes_dir}"
-    )
+    get_target_property(_il_type ${il_name} TYPE)
+    if(_il_type STREQUAL "INTERFACE_LIBRARY")
+        install(TARGETS ${il_name} EXPORT ${il_name}Targets)
+    else()
+        install(TARGETS ${il_name}
+            EXPORT ${il_name}Targets
+            ARCHIVE DESTINATION "${_il_archive_dir}"
+            LIBRARY DESTINATION "${_il_library_dir}"
+            RUNTIME DESTINATION "${_il_runtime_dir}"
+            INCLUDES DESTINATION "${_il_includes_dir}"
+        )
+    endif()
 
     # -- Install CMake Config Files --
     install(EXPORT ${il_name}Targets
