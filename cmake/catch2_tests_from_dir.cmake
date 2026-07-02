@@ -15,8 +15,26 @@
 include_guard()
 include(CTest)
 
+# catch2_tests_from_dir(target dir [link_lib ...]
+#     [PRIVATE_INCLUDES path ...])
+#
+# Builds a Catch2 test executable from all *.cpp files under <dir>, links it
+# against Catch2::Catch2WithMain and any additional <link_lib>s, registers it
+# with CTest, and adds <dir> itself as a PRIVATE include (so test-local headers
+# like test_common.hpp are findable without a path prefix).
+#
+# PRIVATE_INCLUDES accepts additional directories (relative paths are resolved
+# against CMAKE_CURRENT_SOURCE_DIR) to add as PRIVATE includes. Use this to
+# expose the library's private implementation headers to the test target:
+#
+#   catch2_tests_from_dir(unit_test_foo tests/cxx/unit_tests foo
+#       PRIVATE_INCLUDES cxx/src)
 function(catch2_tests_from_dir ctfd_target_name ctfd_dir)
 if(${BUILD_TESTING})
+    cmake_parse_arguments(ctfd "" "" "PRIVATE_INCLUDES" ${ARGN})
+    # ctfd_UNPARSED_ARGUMENTS = link libraries
+    # ctfd_PRIVATE_INCLUDES   = extra private include dirs
+
     include(get_dependencies)
     get_dependencies(catch2)
 
@@ -24,14 +42,25 @@ if(${BUILD_TESTING})
 
     add_executable(${ctfd_target_name} ${ctfd_test_files})
 
+    # The test dir itself is always on the include path so test-local headers
+    # (e.g. test_common.hpp) resolve without a prefix.
     target_include_directories(${ctfd_target_name} PRIVATE "${ctfd_dir}")
 
-    target_link_libraries(
-        ${ctfd_target_name} PRIVATE Catch2::Catch2WithMain ${ARGN})
+    foreach(_inc ${ctfd_PRIVATE_INCLUDES})
+        if(IS_ABSOLUTE "${_inc}")
+            target_include_directories(${ctfd_target_name} PRIVATE "${_inc}")
+        else()
+            target_include_directories(${ctfd_target_name} PRIVATE
+                "${CMAKE_CURRENT_SOURCE_DIR}/${_inc}")
+        endif()
+    endforeach()
 
-        add_test(NAME ${ctfd_target_name}
-             COMMAND ${ctfd_target_name}
-             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    target_link_libraries(
+        ${ctfd_target_name} PRIVATE Catch2::Catch2WithMain ${ctfd_UNPARSED_ARGUMENTS})
+
+    add_test(NAME ${ctfd_target_name}
+         COMMAND ${ctfd_target_name}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 endif()
 endfunction()
