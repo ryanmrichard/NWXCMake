@@ -17,16 +17,28 @@ include(FetchContent)
 
 function(get_dependencies)
     set(_gd_targets)
+    set(_gd_fc_names)
     if(SKBUILD)
         include(dependencies/skbuild_python)
     endif()
-    set(_gd_fc_names)
     foreach(depend_i ${ARGN})
         message(STATUS "Fetching dependency: ${depend_i}")
         set(_gd_uses_fc TRUE)
         include(dependencies/${depend_i})
         if(_gd_uses_fc)
             list(APPEND _gd_fc_names ${depend_i})
+        endif()
+        # Publish the dep-name → CMake-target mapping as a CACHE INTERNAL so
+        # nwx_library (and any other NWXCMake helper) can resolve short names
+        # to real targets without the caller having to know the target name.
+        # Dep files set _gd_target_<name> to override; ecosystem deps (utilities,
+        # parallelzone, …) default to the dep name itself as the target.
+        if(DEFINED _gd_target_${depend_i})
+            set(NWX_DEP_TARGET_${depend_i} "${_gd_target_${depend_i}}"
+                CACHE INTERNAL "CMake target for NWX dep '${depend_i}'")
+        elseif(NOT DEFINED CACHE{NWX_DEP_TARGET_${depend_i}})
+            set(NWX_DEP_TARGET_${depend_i} "${depend_i}"
+                CACHE INTERNAL "CMake target for NWX dep '${depend_i}'")
         endif()
     endforeach()
 

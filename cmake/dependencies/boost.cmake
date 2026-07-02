@@ -28,6 +28,7 @@ endif()
 # Boost::boost is the header-only umbrella target; individual component
 # targets (e.g. Boost::filesystem) can be added by the caller as needed.
 list(APPEND _gd_targets Boost::boost)
+set(_gd_target_boost "Boost::boost")
 
 # Boost is found via find_package, not FetchContent; opt out of the
 # FetchContent_MakeAvailable call in get_dependencies.

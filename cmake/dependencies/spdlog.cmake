@@ -24,3 +24,5 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/gabime/spdlog
     GIT_TAG        "v1.16.0"
 )
+
+set(_gd_target_spdlog "spdlog::spdlog")

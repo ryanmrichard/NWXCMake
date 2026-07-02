@@ -40,3 +40,4 @@ if(NOT TARGET Eigen3::Eigen)
 endif()
 
 list(APPEND _gd_targets Eigen3::Eigen)
+set(_gd_target_eigen "Eigen3::Eigen")

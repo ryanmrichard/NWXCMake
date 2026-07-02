@@ -24,3 +24,4 @@ FetchContent_Declare(
 )
 
 list(APPEND _gd_targets fort)
+set(_gd_target_libfort "fort")
