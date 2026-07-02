@@ -14,13 +14,48 @@
 
 include_guard()
 
+# Helper: resolve a list of dep short-names to real CMake targets.
+# For each name, checks NWX_DEP_TARGET_<name> (published by get_dependencies);
+# falls back to using the name itself (ecosystem deps whose name == target).
+function(_nwx_resolve_dep_names out_var)
+    set(_resolved)
+    foreach(_dep ${ARGN})
+        if(DEFINED CACHE{NWX_DEP_TARGET_${_dep}})
+            list(APPEND _resolved "${NWX_DEP_TARGET_${_dep}}")
+        else()
+            list(APPEND _resolved "${_dep}")
+        endif()
+    endforeach()
+    set(${out_var} "${_resolved}" PARENT_SCOPE)
+endfunction()
+
+# nwx_library(name inc_dir src_dir
+#     [ecosystem_dep ...]          <- PUBLIC ecosystem deps (utilities, parallelzone, …)
+#     [PUBLIC  ext_dep ...]        <- additional PUBLIC deps by NWX short name
+#     [PRIVATE ext_dep ...])       <- PRIVATE deps by NWX short name
+#
+# PUBLIC and PRIVATE deps use the same short names as get_dependencies() so
+# callers never need to know the underlying CMake target names.
+# get_dependencies() publishes NWX_DEP_TARGET_<name> cache vars that this
+# function reads to resolve short names → real targets.
 function(nwx_library nl_project_name nl_inc_dir nl_src_dir)
+    cmake_parse_arguments(nl "" "" "PUBLIC;PRIVATE" ${ARGN})
+    # nl_UNPARSED_ARGUMENTS = positional ecosystem deps (stay PUBLIC)
+    # nl_PUBLIC              = extra PUBLIC deps by short name
+    # nl_PRIVATE             = PRIVATE deps by short name
+
+    _nwx_resolve_dep_names(_nl_pub_extra ${nl_PUBLIC})
+    _nwx_resolve_dep_names(_nl_priv      ${nl_PRIVATE})
+
     file(GLOB_RECURSE __nl_source_files CONFIGURE_DEPENDS ${nl_src_dir}/*.cpp)
     list(FILTER __nl_source_files EXCLUDE REGEX ".*/export_.*\\.cpp$")
 
     if(__nl_source_files)
         add_library(${nl_project_name} ${__nl_source_files})
-        target_link_libraries(${nl_project_name} PUBLIC ${ARGN})
+        target_link_libraries(${nl_project_name}
+            PUBLIC  ${nl_UNPARSED_ARGUMENTS} ${_nl_pub_extra}
+            PRIVATE ${_nl_priv}
+        )
         target_include_directories(${nl_project_name}
             PUBLIC
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_inc_dir}>
@@ -32,9 +67,13 @@ function(nwx_library nl_project_name nl_inc_dir nl_src_dir)
             ${nl_project_name} PROPERTIES POSITION_INDEPENDENT_CODE ON
         )
     else()
-        # Header-only library — use INTERFACE target.
+        # Header-only library — INTERFACE target.
+        # PRIVATE deps have no meaning for INTERFACE targets; they are silently
+        # dropped (the library has no TUs to compile against them).
         add_library(${nl_project_name} INTERFACE)
-        target_link_libraries(${nl_project_name} INTERFACE ${ARGN})
+        target_link_libraries(${nl_project_name}
+            INTERFACE ${nl_UNPARSED_ARGUMENTS} ${_nl_pub_extra}
+        )
         target_include_directories(${nl_project_name}
             INTERFACE
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${nl_inc_dir}>
