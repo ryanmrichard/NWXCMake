@@ -32,6 +32,8 @@ include_guard()
 # - ``BUILD_TESTING``           (default ``OFF``) — build unit tests
 # - ``BUILD_PYBIND11_BINDINGS`` (default ``ON``)  — build Python bindings
 # - ``INTEGRATION_TESTING``     (default ``OFF``) — build integration tests
+# - ``DEVELOPER_SETUP``         (default ``OFF``) — wire up the shared
+#   pre-commit hooks for local development (see nwx_setup_pre_commit)
 #
 # Example usage:
 #
@@ -58,3 +60,9 @@ option(BUILD_TESTING           "Whether to build the unit tests"        OFF)
 option(BUILD_PYBIND11_BINDINGS "Build Python bindings via pybind11"     ON)
 option(INTEGRATION_TESTING     "Should we build the integration tests?" OFF)
 option(ENABLE_SIGMA            "Enable Sigma for uncertainty tracking"  OFF)
+option(DEVELOPER_SETUP         "Wire up local dev tooling (pre-commit)" OFF)
+
+if(DEVELOPER_SETUP)
+    include(nwx_setup_pre_commit)
+    nwx_setup_pre_commit()
+endif()
