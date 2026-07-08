@@ -17,8 +17,8 @@ include(FetchContent)
 
 FetchContent_Declare(
     utilities
-    GIT_REPOSITORY https://github.com/NWChemEx/Utilities
-    GIT_TAG        master
+    GIT_REPOSITORY https://github.com/ryanmrichard/Utilities
+    GIT_TAG        build_overhaul
 )
 
 if(SKBUILD)
