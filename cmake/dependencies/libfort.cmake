@@ -17,6 +17,14 @@ include(FetchContent)
 
 set(FORT_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 
+# libfort v0.4.2's cmake_minimum_required() predates 3.5, which newer CMake
+# releases refuse to configure at all. This only relaxes the minimum-version
+# check for projects that don't request a range of their own; it doesn't
+# change policy behavior for our own CMakeLists.txt.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 FetchContent_Declare(
     libfort
     GIT_REPOSITORY https://github.com/seleznevae/libfort
