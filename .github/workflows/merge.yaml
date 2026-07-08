@@ -27,7 +27,11 @@ jobs:
 
   deploy_to_pypi:
     needs: tag-commit
-    uses: ryanmrichard/.github/.github/workflows/deploy_nwx_pypi.yaml@master
-    with:
-      compiled: false
-      use_test_pypi: "true"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Deploy to PyPI
+        uses: ryanmrichard/.github/.github/actions/deploy_to_pypi@master
+        with:
+          use_test_pypi: "true"

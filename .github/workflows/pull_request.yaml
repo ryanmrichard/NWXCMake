@@ -25,7 +25,9 @@ jobs:
     uses: ryanmrichard/.github/.github/workflows/check_formatting.yaml@master
 
   test_pypi_deploy:
-    uses: ryanmrichard/.github/.github/workflows/deploy_nwx_pypi.yaml@master
-    with:
-      compiled: false
-      dry_run: "true"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test PyPI Deploy
+        uses: ryanmrichard/.github/.github/actions/deploy_to_pypi@master
+        with:
+          dry_run: "true"
