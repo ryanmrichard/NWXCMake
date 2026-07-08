@@ -27,7 +27,5 @@ jobs:
   test_pypi_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Test PyPI Deploy
-        uses: ryanmrichard/.github/.github/actions/deploy_to_pypi@master
-        with:
-          dry_run: "true"
+      - name: Build PyPI Distribution
+        uses: ryanmrichard/.github/.github/actions/build_pypi_dist@master

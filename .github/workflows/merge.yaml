@@ -31,7 +31,11 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Deploy to PyPI
-        uses: ryanmrichard/.github/.github/actions/deploy_to_pypi@master
+      - name: Build PyPI Distribution
+        uses: ryanmrichard/.github/.github/actions/build_pypi_dist@master
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          use_test_pypi: "true"
+          packages-dir: dist/
+          repository-url: https://test.pypi.org/legacy/
