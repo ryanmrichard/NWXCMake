@@ -14,6 +14,13 @@
 
 include_guard()
 
+# enable_testing() (called internally by include(CTest)) has no effect when
+# called from inside a function -- it must run at directory scope. Calling it
+# here, once, at file-include time keeps the function itself free to be a
+# no-op guard via BUILD_TESTING without silently failing to register any
+# tests when BUILD_TESTING is ON.
+include(CTest)
+
 # catch2_tests_from_dir(target dir [link_lib ...]
 #     [PRIVATE_INCLUDES path ...])
 #
@@ -36,7 +43,6 @@ function(catch2_tests_from_dir ctfd_target_name ctfd_dir)
         return()
     endif()
 
-    include(CTest)
     cmake_parse_arguments(ctfd "" "" "PRIVATE_INCLUDES" ${ARGN})
     # ctfd_UNPARSED_ARGUMENTS = link libraries
     # ctfd_PRIVATE_INCLUDES   = extra private include dirs

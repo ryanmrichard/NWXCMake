@@ -25,17 +25,7 @@ jobs:
     uses: NWChemEx/.github/.github/workflows/check_formatting.yaml@master
 
   test_pypi_deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - name: Test PyPI Deploy
-        uses: NWChemEx/.github/.github/actions/deploy_to_pypi@master
-        with:
-          dry_run: "true"
+    uses: NWChemEx/.github/.github/workflows/deploy_nwx_pypi.yaml@master
+    with:
+      compiled: false
+      dry_run: "true"

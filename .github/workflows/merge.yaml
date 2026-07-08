@@ -27,18 +27,6 @@ jobs:
 
   deploy_to_pypi:
     needs: tag-commit
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - name: Checkout Source
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-      - name: Deploy to PyPI
-        uses: NWChemEx/.github/.github/actions/deploy_to_pypi@master
+    uses: NWChemEx/.github/.github/workflows/deploy_nwx_pypi.yaml@master
+    with:
+      compiled: false

@@ -23,6 +23,8 @@ include_guard()
 #
 # Variables set (if not already defined)
 # ---------------------------------------
+# - ``CMAKE_BUILD_TYPE``            — defaults to ``Release``, or ``Debug``
+#   when ``DEVELOPER_SETUP`` is ``ON``
 # - ``CMAKE_CXX_STANDARD``          — defaults to ``20``
 # - ``CMAKE_CXX_STANDARD_REQUIRED`` — defaults to ``ON``
 # - ``CMAKE_CXX_SCAN_FOR_MODULES``  — defaults to ``OFF``
@@ -44,6 +46,20 @@ include_guard()
 #    include(set_default_nwx_options)
 #]]
 
+option(BUILD_TESTING           "Whether to build the unit tests"        OFF)
+option(BUILD_PYBIND11_BINDINGS "Build Python bindings via pybind11"     ON)
+option(INTEGRATION_TESTING     "Should we build the integration tests?" OFF)
+option(ENABLE_SIGMA            "Enable Sigma for uncertainty tracking"  OFF)
+option(DEVELOPER_SETUP         "Wire up local dev tooling (pre-commit)" OFF)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    if(DEVELOPER_SETUP)
+        set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+    else()
+        set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+    endif()
+endif()
+
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     set(CMAKE_CXX_STANDARD 20)
 endif()
@@ -55,12 +71,6 @@ endif()
 if(NOT DEFINED CMAKE_CXX_SCAN_FOR_MODULES)
     set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 endif()
-
-option(BUILD_TESTING           "Whether to build the unit tests"        OFF)
-option(BUILD_PYBIND11_BINDINGS "Build Python bindings via pybind11"     ON)
-option(INTEGRATION_TESTING     "Should we build the integration tests?" OFF)
-option(ENABLE_SIGMA            "Enable Sigma for uncertainty tracking"  OFF)
-option(DEVELOPER_SETUP         "Wire up local dev tooling (pre-commit)" OFF)
 
 if(DEVELOPER_SETUP)
     include(nwx_setup_pre_commit)
