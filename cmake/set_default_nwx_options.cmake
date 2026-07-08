@@ -52,6 +52,18 @@ option(INTEGRATION_TESTING     "Should we build the integration tests?" OFF)
 option(ENABLE_SIGMA            "Enable Sigma for uncertainty tracking"  OFF)
 option(DEVELOPER_SETUP         "Wire up local dev tooling (pre-commit)" OFF)
 
+# The pybind11 module is a shared object, so everything it statically links
+# against (including FetchContent'd dependencies like spdlog) must be built
+# with -fPIC, and the project's own libraries are built shared to match.
+if(BUILD_PYBIND11_BINDINGS)
+    if(NOT DEFINED CMAKE_POSITION_INDEPENDENT_CODE)
+        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    endif()
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        set(BUILD_SHARED_LIBS ON)
+    endif()
+endif()
+
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     if(DEVELOPER_SETUP)
         set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
