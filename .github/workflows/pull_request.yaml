@@ -22,10 +22,10 @@ on:
 
 jobs:
   check_formatting:
-    uses: NWChemEx/.github/.github/workflows/check_formatting.yaml@master
+    uses: ryanmrichard/.github/.github/workflows/check_formatting.yaml@master
 
   test_pypi_deploy:
-    uses: NWChemEx/.github/.github/workflows/deploy_nwx_pypi.yaml@master
+    uses: ryanmrichard/.github/.github/workflows/deploy_nwx_pypi.yaml@master
     with:
       compiled: false
       dry_run: "true"

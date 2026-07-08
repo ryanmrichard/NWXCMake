@@ -22,11 +22,12 @@ on:
 
 jobs:
   tag-commit:
-    uses: NWChemEx/.github/.github/workflows/tag.yaml@master
+    uses: ryanmrichard/.github/.github/workflows/tag.yaml@master
     secrets: inherit
 
   deploy_to_pypi:
     needs: tag-commit
-    uses: NWChemEx/.github/.github/workflows/deploy_nwx_pypi.yaml@master
+    uses: ryanmrichard/.github/.github/workflows/deploy_nwx_pypi.yaml@master
     with:
       compiled: false
+      use_test_pypi: "true"
