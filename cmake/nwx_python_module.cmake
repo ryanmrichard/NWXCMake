@@ -14,7 +14,22 @@
 
 include_guard()
 
+#[[[
+# Builds a pybind11 extension module from the export_*.cpp files under
+# nwx_python_src_dir.
+#
+# Keyword args (both optional; needed for test-only helper modules like
+# py_test_<repo> or <repo>_examples, which shouldn't ship in the wheel and
+# may need to link libraries beyond ${PROJECT_NAME}):
+#   NO_INSTALL       -- skip installing the module (and re-installing
+#                        ${PROJECT_NAME}). Use for modules that only exist to
+#                        support the test suite.
+#   DEPENDS <libs>    -- extra libraries linked into the module PRIVATEly,
+#                        in addition to ${PROJECT_NAME}.
+#]]
 function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
+    cmake_parse_arguments(npm "NO_INSTALL" "" "DEPENDS" ${ARGN})
+
     if(NOT BUILD_PYBIND11_BINDINGS)
         return()
     endif()
@@ -32,7 +47,9 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
     pybind11_add_module(
         ${nwx_python_module_name}_python ${__nwx_python_module_source_files}
     )
-    target_link_libraries(${nwx_python_module_name}_python PRIVATE ${PROJECT_NAME})
+    target_link_libraries(${nwx_python_module_name}_python PRIVATE
+        ${PROJECT_NAME} ${npm_DEPENDS}
+    )
     # The bindings live alongside the library sources; add that dir so their
     # sibling helper headers resolve regardless of the repo's cxx/ vs cpp/
     # layout. The linked library already carries its public include dir.
@@ -56,6 +73,10 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
         set_target_properties(${nwx_python_module_name}_python
             PROPERTIES INSTALL_RPATH "$ORIGIN"
         )
+    endif()
+
+    if(npm_NO_INSTALL)
+        return()
     endif()
 
     set(_nwx_py_dest
