@@ -17,8 +17,8 @@ include(FetchContent)
 
 FetchContent_Declare(
     chemist
-    GIT_REPOSITORY https://github.com/NWChemEx/Chemist
-    GIT_TAG        master
+    GIT_REPOSITORY https://github.com/ryanmrichard/Chemist
+    GIT_TAG        build_overhaul
 )
 
 if(SKBUILD)
