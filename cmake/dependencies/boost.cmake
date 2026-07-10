@@ -12,14 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Boost is found via the system (CMake config package from Boost >= 1.70).
-# CMP0167 NEW: use BoostConfig.cmake directly, suppressing the legacy
-# FindBoost deprecation warning present in CMake >= 3.30.
+# Boost is found via the system. Deliberately left in CMP0167 OLD (CMake's
+# own bundled, deprecated-but-functional FindBoost module) rather than NEW
+# (Boost's own exported BoostConfig.cmake, only shipped since 1.70) --
+# nothing here uses more than the header-only Boost::boost umbrella target,
+# which the legacy module provides identically, and OLD additionally works
+# with the much older Boost still shipped by manylinux images' package
+# managers (e.g. manylinux2014's boost-devel is 1.53.0). If a future
+# consumer needs a Boost >= 1.70-only feature, switch this back to NEW.
 # No include_guard: find_package is idempotent, and the _gd_uses_fc flag
 # must be set every time this file is included so get_dependencies skips
 # calling FetchContent_MakeAvailable for boost.
 if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 NEW)
+    cmake_policy(SET CMP0167 OLD)
 endif()
 if(NOT Boost_FOUND)
     find_package(Boost REQUIRED)
