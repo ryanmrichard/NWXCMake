@@ -50,9 +50,23 @@ function(nwx_python_test npt_test_name npt_driver)
         NAME "${npt_test_name}"
         COMMAND "${Python_EXECUTABLE}" "${npt_driver}"
     )
-    # Make the just-built extension importable by the driver.
+
+    # Make the just-built extension, and any fetched dependency's own
+    # pybind11 module (e.g. parallelzone_python, recorded by
+    # get_dependencies), importable by the driver. $ENV{PYTHONPATH} is
+    # evaluated at CMake *configure* time here (not when the test actually
+    # runs), so it only helps if something was already on PYTHONPATH before
+    # configure -- e.g. a dependency installed the normal way (pip install,
+    # findable via site-packages) rather than fetched from source into this
+    # build tree, which is why that alone isn't enough for the latter case.
+    get_property(_npt_dep_pydirs GLOBAL PROPERTY NWX_PYTHON_MODULE_DIRS)
+    set(_npt_pythonpath "$<TARGET_FILE_DIR:${PROJECT_NAME}_python>")
+    foreach(_npt_dir ${_npt_dep_pydirs})
+        string(APPEND _npt_pythonpath ":${_npt_dir}")
+    endforeach()
+    string(APPEND _npt_pythonpath ":$ENV{PYTHONPATH}")
+
     set_tests_properties("${npt_test_name}" PROPERTIES
-        ENVIRONMENT
-        "PYTHONPATH=$<TARGET_FILE_DIR:${PROJECT_NAME}_python>:$ENV{PYTHONPATH}"
+        ENVIRONMENT "PYTHONPATH=${_npt_pythonpath}"
     )
 endfunction()

@@ -45,5 +45,21 @@ function(get_dependencies)
     if(_gd_fc_names)
         FetchContent_MakeAvailable(${_gd_fc_names})
     endif()
+
+    # Record the build-tree location of any fetched dependency's own pybind11
+    # module (named "<dep>_python" by nwx_python_module, e.g. parallelzone
+    # fetched as a source dependency of this project also builds
+    # parallelzone_python). nwx_python_test reads this global property to put
+    # such modules on PYTHONPATH for CTest -- they aren't installed anywhere
+    # on the ambient dev matrix's Python, only $ENV{PYTHONPATH} at CMake
+    # configure time, which is generally empty then.
+    foreach(depend_i ${_gd_fc_names})
+        if(TARGET ${depend_i}_python)
+            set_property(GLOBAL APPEND PROPERTY NWX_PYTHON_MODULE_DIRS
+                "$<TARGET_FILE_DIR:${depend_i}_python>"
+            )
+        endif()
+    endforeach()
+
     set(GET_DEPENDENCIES_TARGETS "${_gd_targets}" PARENT_SCOPE)
 endfunction()
