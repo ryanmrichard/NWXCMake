@@ -82,12 +82,21 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
     set(_nwx_py_dest
         "$<IF:$<BOOL:${SKBUILD_PLATLIB_DIR}>,${SKBUILD_PLATLIB_DIR},lib>"
     )
-    install(TARGETS ${nwx_python_module_name}_python DESTINATION "${_nwx_py_dest}")
-    # Co-install the C++ library next to the extension so a self-contained wheel
-    # (or plain install) can load it via the rpath set above. This is a no-op
-    # for a static library (nothing to install under LIBRARY/RUNTIME).
-    install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION "${_nwx_py_dest}"
-        RUNTIME DESTINATION "${_nwx_py_dest}"
+    # RUNTIME_DEPENDENCY_SET walks the extension's actual dynamic-link
+    # dependencies at install time (via file(GET_RUNTIME_DEPENDENCIES), the
+    # same mechanism as ldd/otool) and stages every non-system shared library
+    # it finds -- ${PROJECT_NAME} itself, but also anything *it* links
+    # shared (e.g. a FetchContent'd spdlog/fmt built as a shared lib). Without
+    # this, only ${PROJECT_NAME} was ever co-installed, so a wheel-repair
+    # tool (auditwheel/delocate) had nothing to bundle those other libraries
+    # from and failed with "library not found".
+    install(TARGETS ${nwx_python_module_name}_python
+        RUNTIME_DEPENDENCY_SET nwx_rtd
+        DESTINATION "${_nwx_py_dest}"
+    )
+    install(RUNTIME_DEPENDENCY_SET nwx_rtd
+        DESTINATION "${_nwx_py_dest}"
+        PRE_EXCLUDE_REGEXES "api-ms-" "^libc\\.so" "^libm\\.so" "^libpthread\\.so"
+        POST_EXCLUDE_REGEXES ".*system32/.*\\.dll" "^/lib" "^/usr/lib" "^/System/Library"
     )
 endfunction()
