@@ -20,6 +20,15 @@ include(FetchContent)
 # policy CMP0077).
 set(GAUXC_ENABLE_HDF5 OFF CACHE BOOL "" FORCE)
 
+# GauXC transitively fetches its own libxc/ExchCXX/IntegratorXX, some of
+# which predate CMake 3.5's cmake_minimum_required() floor (same situation
+# as libfort.cmake); newer CMake releases refuse to configure those at all
+# otherwise. Only relaxes the check for projects that don't request a range
+# of their own; doesn't change policy behavior for our own CMakeLists.txt.
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+endif()
+
 FetchContent_Declare(
     gauxc
     GIT_REPOSITORY https://github.com/wavefunction91/GauXC
