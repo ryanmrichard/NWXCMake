@@ -64,6 +64,19 @@ if(BUILD_PYBIND11_BINDINGS)
     endif()
 endif()
 
+# install_target.cmake hardcodes "lib" (not GNUInstallDirs) for this
+# project's own libraries. FetchContent'd dependencies that *do* respect
+# GNUInstallDirs (e.g. spdlog) would otherwise install to a
+# platform-specific directory instead -- notably "lib64" on RHEL/CentOS
+# (and so manylinux) x86_64 images -- landing one level away from where a
+# pybind11 extension's INSTALL_RPATH looks (see nwx_python_module.cmake),
+# breaking wheel-repair tools (auditwheel/delocate) that can't find the
+# library outside that rpath. Forcing this keeps every installed shared
+# library in the one place the whole ecosystem's rpaths expect.
+if(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+    set(CMAKE_INSTALL_LIBDIR lib)
+endif()
+
 if(NOT DEFINED CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     if(DEVELOPER_SETUP)
         set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
