@@ -61,17 +61,22 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
         PROPERTIES OUTPUT_NAME ${nwx_python_module_name}
     )
 
-    # When ${PROJECT_NAME} is a shared library the extension loads it at runtime
-    # via an rpath. Point the rpath at the extension's own directory so the
-    # co-installed library (below) is found. Harmless when the library is static
-    # (the extension is then self-contained).
+    # When ${PROJECT_NAME} (and anything *it* links shared, e.g. a
+    # FetchContent'd spdlog) is a shared library, the extension loads it at
+    # runtime via an rpath. Search both the extension's own directory --
+    # where ${PROJECT_NAME} is co-installed, below -- and its "lib"
+    # subdirectory, which is where a FetchContent'd shared dependency lands
+    # via *its own* bundled install() rule (e.g. spdlog installs itself to
+    # the plain relative "lib" destination, regardless of this function's
+    # SKBUILD-aware _nwx_py_dest). Harmless when everything is static (the
+    # extension is then self-contained and there's nothing at either path).
     if(APPLE)
         set_target_properties(${nwx_python_module_name}_python
-            PROPERTIES INSTALL_RPATH "@loader_path"
+            PROPERTIES INSTALL_RPATH "@loader_path;@loader_path/lib"
         )
     else()
         set_target_properties(${nwx_python_module_name}_python
-            PROPERTIES INSTALL_RPATH "$ORIGIN"
+            PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/lib"
         )
     endif()
 
@@ -82,21 +87,15 @@ function(nwx_python_module nwx_python_module_name nwx_python_src_dir)
     set(_nwx_py_dest
         "$<IF:$<BOOL:${SKBUILD_PLATLIB_DIR}>,${SKBUILD_PLATLIB_DIR},lib>"
     )
-    # RUNTIME_DEPENDENCY_SET walks the extension's actual dynamic-link
-    # dependencies at install time (via file(GET_RUNTIME_DEPENDENCIES), the
-    # same mechanism as ldd/otool) and stages every non-system shared library
-    # it finds -- ${PROJECT_NAME} itself, but also anything *it* links
-    # shared (e.g. a FetchContent'd spdlog/fmt built as a shared lib). Without
-    # this, only ${PROJECT_NAME} was ever co-installed, so a wheel-repair
-    # tool (auditwheel/delocate) had nothing to bundle those other libraries
-    # from and failed with "library not found".
-    install(TARGETS ${nwx_python_module_name}_python
-        RUNTIME_DEPENDENCY_SET nwx_rtd
-        DESTINATION "${_nwx_py_dest}"
-    )
-    install(RUNTIME_DEPENDENCY_SET nwx_rtd
-        DESTINATION "${_nwx_py_dest}"
-        PRE_EXCLUDE_REGEXES "api-ms-" "^libc\\.so" "^libm\\.so" "^libpthread\\.so"
-        POST_EXCLUDE_REGEXES ".*system32/.*\\.dll" "^/lib" "^/usr/lib" "^/System/Library"
+    install(TARGETS ${nwx_python_module_name}_python DESTINATION "${_nwx_py_dest}")
+    # Co-install the C++ library next to the extension too (in addition to
+    # its own normal "lib" install elsewhere in the project) so a
+    # self-contained wheel (or plain install) can load it via the rpath set
+    # above without depending on relative-path math between the two
+    # locations. This is a no-op for a static library (nothing to install
+    # under LIBRARY/RUNTIME).
+    install(TARGETS ${PROJECT_NAME}
+        LIBRARY DESTINATION "${_nwx_py_dest}"
+        RUNTIME DESTINATION "${_nwx_py_dest}"
     )
 endfunction()

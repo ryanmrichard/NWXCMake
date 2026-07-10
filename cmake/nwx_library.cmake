@@ -66,6 +66,23 @@ function(nwx_library nl_project_name nl_inc_dir nl_src_dir)
         set_target_properties(
             ${nl_project_name} PROPERTIES POSITION_INDEPENDENT_CODE ON
         )
+        # When shared, this library may itself need another shared library
+        # (e.g. a FetchContent'd spdlog) at runtime. Both land in the same
+        # "lib" directory via their own install_library() call below, so
+        # $ORIGIN alone covers that placement -- but this library is also
+        # sometimes co-installed a second time, flat, next to a pybind11
+        # extension (see nwx_python_module.cmake), where its sibling would be
+        # one directory down at "lib/", hence $ORIGIN/lib too. A no-op when
+        # static (nothing dynamically loads at runtime).
+        if(APPLE)
+            set_target_properties(${nl_project_name}
+                PROPERTIES INSTALL_RPATH "@loader_path;@loader_path/lib"
+            )
+        else()
+            set_target_properties(${nl_project_name}
+                PROPERTIES INSTALL_RPATH "$ORIGIN;$ORIGIN/lib"
+            )
+        endif()
     else()
         # Header-only library — INTERFACE target.
         # PRIVATE deps have no meaning for INTERFACE targets; they are silently
