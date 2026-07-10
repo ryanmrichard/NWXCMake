@@ -30,5 +30,8 @@ FetchContent_MakeAvailable(libxc)
 set(BUILD_TESTING "${_gd_bt_backup}" CACHE BOOL "" FORCE)
 unset(_gd_bt_backup)
 
-set(_gd_target_libxc "Libxc::xc")
+# libxc's CMakeLists only defines the plain "xc" target; "Libxc::xc" is an
+# imported-target alias created by its install(EXPORT) rule, which doesn't
+# exist for an in-tree FetchContent build (same situation as gau2grid's "gg").
+set(_gd_target_libxc "xc")
 set(_gd_uses_fc FALSE)
