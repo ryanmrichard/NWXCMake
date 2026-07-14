@@ -19,7 +19,18 @@ include_guard()
 # whatever get_dependencies(integrals chemcache nux) resolves to.
 set(_gd_uses_fc FALSE)
 
+# BUILD_TESTING is a global CACHE flag, so without this toggle each of
+# integrals/chemcache/nux would also register (and, for CTest purposes,
+# run) its own unit-test suite as a side effect of being fetched here --
+# e.g. chemcache's own py_utils_test_chemcache, which needs test-only
+# Python deps (requests) this build never installs. We only want the
+# library targets, so build them the same way libint2.cmake does: with
+# testing off for the fetch, restored immediately after.
+set(_gd_bt_backup "${BUILD_TESTING}")
+set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 get_dependencies(integrals chemcache nux)
+set(BUILD_TESTING "${_gd_bt_backup}" CACHE BOOL "" FORCE)
+unset(_gd_bt_backup)
 
 if(NOT TARGET nwchemex)
     add_library(nwchemex INTERFACE)
