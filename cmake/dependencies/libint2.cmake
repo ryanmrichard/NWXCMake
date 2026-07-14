@@ -32,7 +32,22 @@ FetchContent_Declare(
 # clobbered. Opt out of the batched call via _gd_uses_fc below.
 set(_gd_bt_backup "${BUILD_TESTING}")
 set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
+
+# When some other dependency in the same build (e.g. SCF's own gauxc/eigen
+# fetch) has already declared a FetchContent dependency named "eigen",
+# libint2's own internal Eigen detection reuses that already-populated
+# source dir but wraps it in its own plain (non-IMPORTED) "libint2_Eigen"
+# INTERFACE target, which it then unconditionally exports via its own
+# install(EXPORT ...) -- and that export fails CMake's generate-time check
+# because the wrapped include dir is a build-tree path. Suppress libint2's
+# own install rules while it's being added; we only need its build-tree
+# targets, never its installed package config.
+set(_gd_skip_install_backup "${CMAKE_SKIP_INSTALL_RULES}")
+set(CMAKE_SKIP_INSTALL_RULES ON)
 FetchContent_MakeAvailable(libint2)
+set(CMAKE_SKIP_INSTALL_RULES "${_gd_skip_install_backup}")
+unset(_gd_skip_install_backup)
+
 set(BUILD_TESTING "${_gd_bt_backup}" CACHE BOOL "" FORCE)
 unset(_gd_bt_backup)
 
