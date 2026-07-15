@@ -48,6 +48,16 @@ FetchContent_MakeAvailable(libint2)
 set(CMAKE_SKIP_INSTALL_RULES "${_gd_skip_install_backup}")
 unset(_gd_skip_install_backup)
 
+# CMAKE_SKIP_INSTALL_RULES stops libint2 from writing its own
+# cmake_install.cmake, but the parent directory's generated cmake_install.cmake
+# still contains an unconditional include() of that path regardless -- so
+# `cmake --install` fails with "include could not find requested file"
+# unless something is there. Stand in with a no-op so the include succeeds.
+if(NOT EXISTS "${libint2_BINARY_DIR}/cmake_install.cmake")
+    file(WRITE "${libint2_BINARY_DIR}/cmake_install.cmake"
+         "# Intentionally left blank: libint2's install rules are suppressed.\n")
+endif()
+
 set(BUILD_TESTING "${_gd_bt_backup}" CACHE BOOL "" FORCE)
 unset(_gd_bt_backup)
 
