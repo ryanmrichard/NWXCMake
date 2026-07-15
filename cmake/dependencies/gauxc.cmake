@@ -29,6 +29,31 @@ if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
 endif()
 
+# GauXC's own CMakeLists calls find_package(OpenMP REQUIRED) for both C and
+# CXX. AppleClang has no built-in OpenMP runtime, so FindOpenMP.cmake can't
+# find it there without explicit hints -- point it at Homebrew's libomp (the
+# standard workaround) when nothing has hinted OpenMP already.
+if(APPLE AND NOT DEFINED OpenMP_C_FLAGS AND NOT DEFINED OpenMP_CXX_FLAGS)
+    find_program(_gd_brew_exe brew)
+    if(_gd_brew_exe)
+        execute_process(
+            COMMAND "${_gd_brew_exe}" --prefix libomp
+            OUTPUT_VARIABLE _gd_libomp_prefix
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+    endif()
+    if(_gd_libomp_prefix AND EXISTS "${_gd_libomp_prefix}/include/omp.h")
+        set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I${_gd_libomp_prefix}/include")
+        set(OpenMP_C_LIB_NAMES "omp")
+        set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I${_gd_libomp_prefix}/include")
+        set(OpenMP_CXX_LIB_NAMES "omp")
+        set(OpenMP_omp_LIBRARY "${_gd_libomp_prefix}/lib/libomp.dylib")
+    endif()
+    unset(_gd_libomp_prefix)
+    unset(_gd_brew_exe CACHE)
+endif()
+
 FetchContent_Declare(
     gauxc
     GIT_REPOSITORY https://github.com/wavefunction91/GauXC
