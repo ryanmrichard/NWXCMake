@@ -28,6 +28,7 @@ FetchContent_Declare(
     cereal
     GIT_REPOSITORY https://github.com/USCiLab/cereal
     GIT_TAG        "v1.3.2"
+    SYSTEM
 )
 
 set(_gd_target_cereal "cereal::cereal")
