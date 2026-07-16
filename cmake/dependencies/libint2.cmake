@@ -58,6 +58,19 @@ if(NOT EXISTS "${libint2_BINARY_DIR}/cmake_install.cmake")
          "# Intentionally left blank: libint2's install rules are suppressed.\n")
 endif()
 
+# Suppressing libint2's install rules above also throws out the plain
+# install(TARGETS ...) that would have put its compiled .dylib/.so next to
+# consumers -- without it, anything linking libint2 dlopens fine at build
+# time but fails at runtime once installed (library not loaded: libint2...).
+# Re-add just the binary install (no EXPORT set, so it can't hit the
+# wrapped-Eigen generate-time error that all this is working around).
+if(TARGET libint2)
+    install(TARGETS libint2 LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+endif()
+if(TARGET libint2_cxx)
+    install(TARGETS libint2_cxx LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+endif()
+
 set(BUILD_TESTING "${_gd_bt_backup}" CACHE BOOL "" FORCE)
 unset(_gd_bt_backup)
 
